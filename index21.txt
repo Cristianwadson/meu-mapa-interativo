@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Mundi Interativo - Seu Site Personalizado</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
+        #map { height: 500px; width: 100%; border: 2px solid #ccc; margin-bottom: 20px; }
+        .form-container { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input, textarea, button { display: block; margin: 10px 0; padding: 8px; width: 100%; max-width: 300px; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        h1, h2 { color: #333; }
+    </style>
+</head>
+<body>
+    <h1>Mapa Mundi Interativo</h1>
+    <p>Explore continentes, países, estados e cidades. Use o formulário abaixo para adicionar suas próprias informações (ex.: marcadores para cidades ou pontos de interesse).</p>
+
+    <!-- Mapa -->
+    <div id="map"></div>
+
+    <!-- Formulário para Adicionar Informações -->
+    <div class="form-container">
+        <h2>Adicionar Informação ao Mapa</h2>
+        <label for="lat">Latitude (ex.: -23.5505 para São Paulo):</label>
+        <input type="number" id="lat" step="0.0001" placeholder="Ex.: -23.5505">
+        
+        <label for="lng">Longitude (ex.: -46.6333 para São Paulo):</label>
+        <input type="number" id="lng" step="0.0001" placeholder="Ex.: -46.6333">
+        
+        <label for="title">Título (ex.: Nome da Cidade):</label>
+        <input type="text" id="title" placeholder="Ex.: São Paulo">
+        
+        <label for="desc">Descrição (informações extras):</label>
+        <textarea id="desc" rows="3" placeholder="Ex.: Capital econômica do Brasil."></textarea>
+        
+        <button onclick="addMarker()">Adicionar Marcador</button>
+    </div>
+
+    <p><strong>Dicas:</strong> Clique nos marcadores para ver as informações. Para coordenadas, use ferramentas como Google Maps (clique direito em um local para copiar lat/lng). O mapa já inclui exemplos de cidades e um país com estados.</p>
+
+    <script>
+        // Inicializa o mapa centrado no mundo
+        var map = L.map('map').setView([0, 0], 2); // Centro global, zoom inicial
+
+        // Adiciona tiles do OpenStreetMap (mostra continentes, países, cidades)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Exemplo: Marcadores iniciais para cidades
+        var markerSP = L.marker([-23.5505, -46.6333]).addTo(map);
+        markerSP.bindPopup("<b>São Paulo, Brasil</b><br>Capital econômica. População: ~12 milhões.<br><a href='https://pt.wikipedia.org/wiki/S%C3%A3o_Paulo'>Mais info</a>");
+
+        var markerNY = L.marker([40.7128, -74.0060]).addTo(map);
+        markerNY.bindPopup("<b>Nova York, EUA</b><br>Cidade icônica. População: ~8 milhões.<br><a href='https://pt.wikipedia.org/wiki/Nova_Iorque'>Mais info</a>");
+
+        // Exemplo: GeoJSON para um país (Brasil) com estados (simplificado)
+        var brasilGeoJSON = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "properties": { "name": "São Paulo", "info": "Estado mais populoso do Brasil." },
+                    "geometry": { "type": "Polygon", "coordinates": [[[-53.0, -20.0], [-45.0, -20.0], [-45.0, -25.0], [-53.0, -25.0], [-53.0, -20.0]]] }
+                },
+                {
+                    "type": "Feature",
+                    "properties": { "name": "Rio de Janeiro", "info": "Estado famoso pelas praias." },
+                    "geometry": { "type": "Polygon", "coordinates": [[[-44.0, -21.0], [-41.0, -21.0], [-41.0, -23.0], [-44.0, -23.0], [-44.0, -21.0]]] }
+                }
+                // Adicione mais estados aqui se quiser (baixe dados reais de Natural Earth)
+            ]
+        };
+        L.geoJSON(brasilGeoJSON, {
+            style: { color: 'blue', weight: 2 },
+            onEachFeature: function (feature, layer) {
+                layer.bindPopup("<b>" + feature.properties.name + "</b><br>" + feature.properties.info);
+            }
+        }).addTo(map);
+
+        // Função para adicionar marcador via formulário
+        function addMarker() {
+            var lat = parseFloat(document.getElementById('lat').value);
+            var lng = parseFloat(document.getElementById('lng').value);
+            var title = document.getElementById('title').value;
+            var desc = document.getElementById('desc').value;
+
+            if (isNaN(lat) || isNaN(lng) || !title) {
+                alert("Por favor, preencha latitude, longitude e título.");
+                return;
+            }
+
+            var marker = L.marker([lat, lng]).addTo(map);
+            marker.bindPopup("<b>" + title + "</b><br>" + desc);
+
+            // Limpa o formulário
+            document.getElementById('lat').value = '';
+            document.getElementById('lng').value = '';
+            document.getElementById('title').value = '';
+            document.getElementById('desc').value = '';
+
+            alert("Marcador adicionado! Clique nele para ver.");
+        }
+    </script>
+</body>
+</html>
